@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictor V4.7</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            overflow: hidden; /* Prevent scroll on background change */
+        }
+
+        .background-main {
+            background-image: url('https://i.pinimg.com/originals/a0/59/0e/a0590e93a50aa3da22b16ecc2535bfb2.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.5s ease-in-out; /* Smooth transition for background */
+        }
+
+        .background-terminal {
+            background-image: url('https://i.pinimg.com/originals/e4/f1/e6/e4f1e62807ba0fab5e81fd2b32a37e7f.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            width: 100%;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-in-out; /* Smooth transition for background */
+            position: absolute; /* Changed to absolute to allow timer positioning */
+            top: 0;
+            left: 0;
+            opacity: 0; /* Start hidden for fade-in */
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            margin-top: 50px;
+            max-width: 90%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .buttons {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .btn {
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+            outline: none;
+            position: relative;
+            overflow: hidden;
+            will-change: transform, box-shadow;
+        }
+
+        .btn:hover {
+            transform: translateY(-7px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(-3px) scale(0.99);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.6);
+            filter: brightness(0.9);
+        }
+
+        /* Neon Purple Button */
+        .btn-neon-purple {
+            background-color: #8A2BE2;
+            border: 3px solid #EE82EE;
+            box-shadow: 0 0 15px #EE82EE, inset 0 0 5px #EE82EE;
+        }
+
+        .btn-neon-purple:hover {
+            box-shadow: 0 0 25px #EE82EE, inset 0 0 10px #EE82EE;
+        }
+
+        /* Classy Purple Button */
+        .btn-classy-purple {
+            background-image: linear-gradient(to right, #6A057F 0%, #8E2DE2 50%, #6A057F 100%);
+            border: 2px solid #DDA0DD;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-classy-purple:hover {
+            background-image: linear-gradient(to right, #8E2DE2 0%, #6A057F 50%, #8E2DE2 100%);
+        }
+
+        /* Initial Play Section - Hidden/Shown based on old logic, but not used for terminal view now */
+        .play-section {
+            margin-top: 40px;
+            display: none; /* This will now always be hidden in this setup */
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        #multiplierDisplay { /* This is for the old "Play" section, which is no longer active for this logic */
+            font-size: 3.5em;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #00FF00; /* Green color, no longer used for terminal */
+            text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+            cursor: pointer;
+            transition: transform 0.1s ease-out;
+        }
+
+        #multiplierDisplay:active {
+            transform: scale(0.95);
+        }
+
+        .hidden-click-area { /* This is for the old "Play" section, no longer active for this logic */
+            position: relative;
+            width: 180px;
+            height: 70px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+            border-radius: 8px;
+            margin-top: -60px;
+        }
+
+        .hidden-click-area:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: scale(1.02);
+        }
+
+        .hidden-click-area:active {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(0.98);
+        }
+
+        .footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+        }
+
+        /* Terminal View Specific Styles */
+        .terminal-view {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Dark overlay */
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center; /* Center multiplier vertically */
+            align-items: center; /* Center multiplier horizontally */
+            padding-bottom: 100px; /* Add padding to push multiplier up a bit, making space for button */
+        }
+
+        .terminal-content {
+            background-color: transparent; /* Background handled by body */
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: red; /* Red color for terminal multiplier */
+            font-size: 4em;
+            font-weight: bold;
+            text-shadow: 0 0 15px red, 0 0 30px red;
+            cursor: default; /* Multiplier itself is not directly clickable for new value */
+        }
+
+        .next-button-container { /* New container for the NEXT button */
+            position: absolute;
+            bottom: 50px; /* Position from bottom */
+            left: 50%;
+            transform: translateX(-50%); /* Center horizontally */
+            z-index: 102; /* Ensure it's above other elements */
+            display: flex; /* To center the button if needed, although it's one element */
+            justify-content: center;
+            width: 100%; /* Take full width to center effectively */
+        }
+
+        .terminal-btn {
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            background-image: linear-gradient(to right, #6A057F 0%, #8E2DE2 50%, #6A057F 100%);
+            border: 2px solid #DDA0DD;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .terminal-btn:hover {
+            transform: translateY(-7px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 255, 255, 0.2);
+            background-image: linear-gradient(to right, #8E2DE2 0%, #6A057F 50%, #8E2DE2 100%);
+        }
+
+        .terminal-btn:active {
+            transform: translateY(-3px) scale(0.99);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.6);
+            filter: brightness(0.9);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(3px);
+            z-index: 101; /* Ensure back button is above terminal content */
+        }
+
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: white;
+            transform: scale(1.05);
+        }
+
+        /* Countdown Timer - Positioned in top right with new styling */
+        #countdownTimer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            /* New Styling for the "table/box" look */
+            background-color: rgba(60, 0, 100, 0.7); /* Dark purple background with transparency */
+            border: 2px solid #EE82EE; /* Neon purple border */
+            border-radius: 8px; /* Slightly rounded corners */
+            padding: 10px 15px; /* Padding inside the box */
+            font-family: 'Share Tech Mono', monospace; /* Digital/terminal font */
+            font-size: 1.4em; /* Larger font */
+            color: #FFFF00; /* Yellow text for countdown */
+            text-shadow: 0 0 8px rgba(255, 255, 0, 0.7); /* Subtle yellow glow */
+            box-shadow: 0 0 15px rgba(238, 130, 238, 0.5), inset 0 0 5px rgba(238, 130, 238, 0.3); /* Outer and inner glow */
+            text-align: center; /* Center the text within the box */
+            min-width: 150px; /* Minimum width to contain "READY!" or "NEXT in: MM:SS" */
+            line-height: 1.2; /* Adjust line height for better appearance */
+            z-index: 101;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mainPageView" class="background-main">
+        <div class="container">
+            <img src="https://i.ibb.co/sJcwqprx/Untitled.png" alt="Logo Predictor" class="logo">
+
+            <div class="buttons">
+                <button class="btn btn-neon-purple" id="playButton">PLAY</button>
+                <a href="https://vpnceria.life/Ceriabet-Login" target="_blank" class="btn btn-classy-purple">LOGIN</a>
+                <a href="https://vpnceria.life/Ceriabet-Login" target="_blank" class="btn btn-classy-purple">REGISTRASI</a>
+            </div>
+
+            <div class="play-section" id="playSection">
+                <div id="multiplierDisplay">0.50x</div>
+                <div class="hidden-click-area" id="generateMultiplierClickArea"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            PREDICTOR V4.7
+        </div>
+    </div>
+
+    <div id="terminalPageView" class="background-terminal">
+        <a href="#" class="back-button" id="backToMainButton">&lt; BACK</a>
+        <div id="countdownTimer"></div> <div class="terminal-content">
+            <span id="terminalMultiplierDisplay">0.50x</span>
+        </div>
+        <div class="next-button-container">
+            <button class="terminal-btn" id="nextButton">NEXT &gt;</button>
+        </div>
+    </div>
+
+    <script>
+        const mainPageView = document.getElementById('mainPageView');
+        const terminalPageView = document.getElementById('terminalPageView');
+        const playButton = document.getElementById('playButton');
+        const backToMainButton = document.getElementById('backToMainButton');
+        const terminalMultiplierDisplay = document.getElementById('terminalMultiplierDisplay');
+        const nextButton = document.getElementById('nextButton');
+        const countdownTimer = document.getElementById('countdownTimer');
+
+        let lastClickTime = 0; // Waktu terakhir tombol NEXT diklik
+        const cooldownDuration = 2 * 60 * 1000; // 2 menit dalam milidetik
+
+        let countdownInterval; // Untuk menyimpan ID interval countdown
+
+        // Fungsi untuk memulai atau memperbarui countdown timer
+        function startCountdown() {
+            clearInterval(countdownInterval); // Hentikan interval sebelumnya jika ada
+            const now = Date.now();
+            const timeElapsed = now - lastClickTime;
+            const timeRemaining = cooldownDuration - timeElapsed;
+
+            if (timeRemaining <= 0) {
+                countdownTimer.textContent = "READY!"; // Tampilkan READY! jika sudah siap
+                nextButton.disabled = false; // Aktifkan tombol NEXT
+                return;
+            }
+
+            nextButton.disabled = true; // Nonaktifkan tombol NEXT selama cooldown
+
+            countdownInterval = setInterval(() => {
+                const elapsed = Date.now() - lastClickTime;
+                const remaining = cooldownDuration - elapsed;
+
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownTimer.textContent = "READY!";
+                    nextButton.disabled = false;
+                } else {
+                    const minutes = Math.floor(remaining / (60 * 1000));
+                    const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+                    countdownTimer.textContent = `NEXT in: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        playButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            mainPageView.style.opacity = '0';
+            setTimeout(() => {
+                mainPageView.style.display = 'none';
+                terminalPageView.style.display = 'flex';
+                terminalPageView.style.opacity = '1';
+                generateTerminalMultiplier(); // Panggil generateTerminalMultiplier saat pertama kali masuk
+                lastClickTime = Date.now(); // Set waktu klik awal saat masuk
+                startCountdown(); // Mulai countdown
+            }, 500);
+        });
+
+        backToMainButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            clearInterval(countdownInterval); // Hentikan countdown saat kembali
+            terminalPageView.style.opacity = '0';
+            setTimeout(() => {
+                terminalPageView.style.display = 'none';
+                mainPageView.style.display = 'flex';
+                mainPageView.style.opacity = '1';
+                document.querySelector('.buttons').style.display = 'flex';
+                document.getElementById('playSection').style.display = 'none';
+            }, 500);
+        });
+
+        nextButton.addEventListener('click', function() {
+            const now = Date.now();
+            if (now - lastClickTime >= cooldownDuration) {
+                generateTerminalMultiplier();
+                lastClickTime = now;
+                startCountdown(); // Mulai ulang countdown setelah klik NEXT
+            } else {
+                // Feedback sudah otomatis dari timer dan disabled button
+            }
+        });
+
+        function generateTerminalMultiplier() {
+            let multiplier;
+            let rand = Math.random();
+
+            if (rand < 0.05) { // 5% chance for x10 to x100 (rare)
+                multiplier = (Math.random() * (100 - 10) + 10); // Between 10 and 100
+            } else if (rand < 0.20) { // 15% chance for x5 to x10 (less rare)
+                multiplier = (Math.random() * (10 - 5) + 5); // Between 5 and 10
+            } else { // 80% chance for x0.5 to x5 (most common)
+                multiplier = (Math.random() * (5 - 0.5) + 0.5); // Between 0.5 and 5
+            }
+
+            // Ensure multiplier is at least 0.50 and format to 2 decimal places
+            multiplier = Math.max(0.50, multiplier).toFixed(2);
+
+            terminalMultiplierDisplay.textContent = multiplier + 'x';
+        }
+
+    </script>
+
+</body>
+</html>
